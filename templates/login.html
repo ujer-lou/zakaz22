@@ -1,0 +1,27 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <title>Kirish</title>
+</head>
+<body>
+<section class="login-section">
+    <div class="container">
+        <div class="login-content">
+            <h1 class="login-title">Kirish</h1>
+            <form class="login-form" method="POST" action="{% url 'login' %}">
+                {% csrf_token %}
+                <input type="email" name="email" class="login-input" placeholder="E-pochta" required>
+                <input type="password" name="password" class="login-input" placeholder="Parol" required>
+                <div class="login-button-wrap">
+                    <button type="submit" class="login-button">Tasdiqlash</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+</body>
+</html>

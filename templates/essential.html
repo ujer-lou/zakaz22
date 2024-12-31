@@ -1,0 +1,690 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Essential</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}"/>
+    <style>
+        /* Add any additional styles here if necessary */
+        .message-container {
+            margin-bottom: 20px;
+        }
+
+        .message-container p {
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .message-container p.error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .message-container p.success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+    </style>
+</head>
+<body>
+<nav>
+    <div class="container">
+        <div class="nav-content">
+            <div class="nav-content--left">
+                <a href="/"><img src="{% static 'images/Logo 1.svg' %}" alt="Logo Essential" class="nav-logo"></a>
+                <div class="nav-link-wrap">
+                    <a class="nav-link" href="{% url 'essential' %}">Essential</a>
+                    <a class="nav-link" href="{% url 'test_user' %}">Testlar</a>
+                    <div class="dropdown">
+                        <a class="nav-link dropbtn">Writing</a>
+                        <div class="dropdown-content">
+                            <a href="{% url 'writing_task' task_type=1 %}">Task 1</a>
+                            <a href="{% url 'writing_task' task_type=2 %}">Task 2</a>
+                            <a href="{% url 'writing_task' task_type=3 %}">Full Test</a>
+                        </div>
+                    </div>
+                    <a class="nav-link" href="{% url 'speaking' %}">Speaking</a>
+                </div>
+            </div>
+            <script>
+                document.addEventListener('click', function (e) {
+                    if (e.target.matches('.dropbtn')) {
+                        var dropdown = e.target.nextElementSibling;
+                        dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+                    } else {
+                        var openDropdowns = document.querySelectorAll('.dropdown-content');
+                        openDropdowns.forEach(function (elem) {
+                            if (elem.style.display === 'block') {
+                                elem.style.display = 'none';
+                            }
+                        });
+                    }
+                });
+            </script>
+            <style>
+                /* Navigation link styling */
+                .nav-link-wrap {
+                    display: inline-block;
+                    position: relative;
+                }
+
+                /* Style for the dropdown button */
+                .dropbtn {
+                    background: none;
+                    border: none;
+                    color: black; /* Adjust color as per your theme */
+                    text-align: center;
+                    text-decoration: none;
+                    display: inline-block;
+                }
+
+                /* Dropdown content styling */
+                .dropdown-content {
+                    display: none;
+                    position: absolute;
+                    background-color: #f9f9f9; /* Light grey background */
+                    min-width: 160px;
+                    box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+                    z-index: 1;
+                }
+
+                /* Dropdown link styling */
+                .dropdown-content a {
+                    color: black;
+                    padding: 12px 16px;
+                    text-decoration: none;
+                    display: block;
+                    text-align: left;
+                }
+
+                /* Show the dropdown menu on hover */
+                .dropdown:hover .dropdown-content {
+                    display: block;
+                }
+
+                /* Change color of dropdown links on hover */
+                .dropdown-content a:hover {
+                    background-color: #f1f1f1; /* Light grey hover */
+                }
+
+                /* Dropdown container */
+                .dropdown {
+                    display: inline-block;
+                }
+            </style>
+            <div class="nav-content--right">
+                {% if user.is_authenticated %}
+                    {% if user.is_superuser %}
+                        <a class="nav-button" href="{% url 'admin-main' %}">Admin menu</a>
+                        <form method="POST" action="{% url 'logout' %}" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="nav-button">Logout</button>
+                        </form>
+                    {% else %}
+                        <a class="nav-button" href="{% url 'homee' %}">Profile</a>
+                        <form method="POST" action="{% url 'logout' %}" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="nav-button">Logout</button>
+                        </form>
+                    {% endif %}
+                {% else %}
+                    <a class="nav-button" href="{% url 'register' %}">Register</a>
+                    <a class="nav-button" href="{% url 'login' %}">Login</a>
+                {% endif %}
+            </div>
+
+        </div>
+    </div>
+</nav>
+<section class="form-section">
+    <div class="container">
+        <div class="form-content">
+            <!-- Django messages, if any -->
+            {% if messages %}
+                <div class="message-container">
+                    {% for message in messages %}
+                        <p class="{{ message.tags }}">{{ message }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <form method="POST" action="{% url 'essential' %}" id="selection-form">
+                {% csrf_token %}
+                <div style="display: flex; align-items: center; gap: 20px; flex-wrap: wrap;">
+                    <fieldset class="form-group" style="flex: 1;">
+                        <legend for="book-select" class="form-label">Kitob</legend>
+                        <div class="dropdown-wrapper">
+                            <!-- The read-only input that shows the selected book -->
+                            <input type="text" id="book-input" class="dropdown-input" placeholder="Select Book"
+                                   readonly>
+                            <img class="dropdown-icon" src="{% static 'images/Vector.svg' %}" alt="Dropdown arrow">
+                        </div>
+                        <ul class="dropdown-options" id="book-options">
+                            <li class="dropdown-option" data-value="">Select Book</li>
+                            {% for book in books %}
+                                <li class="dropdown-option" data-value="{{ book.id }}">
+                                    {{ book.name }}
+                                    <div class="dropdown-option-icon">
+                                        <img src="{% static 'images/icon-check.svg' %}" alt="">
+                                    </div>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </fieldset>
+
+                    <fieldset class="form-group" style="flex: 1;">
+                        <legend for="unit-select" class="form-label">Bo'lim</legend>
+                        <div class="dropdown-wrapper">
+                            <!-- The read-only input that shows the selected unit -->
+                            <input type="text" id="unit-input" class="dropdown-input" placeholder="Select Unit"
+                                   readonly>
+                            <img class="dropdown-icon" src="{% static 'images/Vector.svg' %}" alt="Dropdown arrow">
+                        </div>
+                        <ul class="dropdown-options" id="unit-options">
+                            <li class="dropdown-option" data-value="">Select Unit</li>
+                            <!-- Units get populated via JS after a book is selected -->
+                        </ul>
+                    </fieldset>
+
+                    <button type="submit" class="form-test-button" style="height: fit-content;">Sinab ko'rish</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+<section class="translation-section">
+    <div class="container">
+        <div class="translation-content">
+            <table class="translation-table">
+                <thead class="translation-header">
+                <tr class="translation-header-row">
+                    <th class="translation-header-cell">
+                        English
+                        <img class="translation-icon" src="{% static 'images/english_icon.svg' %}" alt="English icon">
+                    </th>
+                    <th class="translation-header-cell">
+                        O'zbekcha
+                        <img class="translation-icon" src="{% static 'images/uzb_icon.svg' %}" alt="Uzbek icon">
+                    </th>
+                </tr>
+                </thead>
+                <tbody class="translation-body" id="translation-body">
+                <tr class="translation-row">
+                    <td class="translation-cell">Please select a Book and Unit to view vocabularies.</td>
+                    <td class="translation-cell"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<!-- essential modal -->
+<div class="essential-modal hidden">
+    <div class="essential-modal-content">
+        <div class="essential-modal-header">
+            <h1 class="essential-num" id="current-question-number">1.</h1>
+            <div class="progress-bar-container">
+                <div class="progress-bar" id="progress-bar" style="width: 20%;"></div>
+            </div>
+            <div>
+                <img class="close-btn" src="{% static 'images/close-btn.svg' %}" alt="close btn">
+            </div>
+        </div>
+        <div class="essential-modal-body">
+            <h1 class="essential-modal-title" id="current-question">Mutaxassis</h1>
+            <!-- Optionally, include check and x icons for feedback -->
+            <img src="{% static 'images/check.svg' %}" alt="Check Icon" class="check-icon hidden">
+            <img src="{% static 'images/x-icon.svg' %}" alt="X Icon" class="x-icon hidden">
+        </div>
+        <fieldset class="essential-modal-footer">
+            <legend for="input-translation" class="labeline">Tarjima kiriting</legend>
+            <input type="text" id="answer-input" placeholder="Ruxsat berish" class="essential-modal-input"/>
+        </fieldset>
+        <div class="essential-modal-button-wrap">
+            <button type="button" class="essential-modal-button" id="next-button">Keyingi</button>
+        </div>
+    </div>
+</div>
+<!-- audio modal -->
+<div class="audio-modal hidden">
+    <div class="audio-modal-content">
+        <div class="audio-modal-header">
+            <h1 class="audio-num">2.</h1>
+            <div class="progress-bar-container">
+                <div class="progress-bar" style="width: 10%;"></div>
+            </div>
+            <div>
+                <img src="{% static 'images/close-btn.svg' %}" alt="close btn" class="close-btn">
+            </div>
+        </div>
+        <div class="audio-modal-body">
+            <div class="audio-player">
+                <img src="{% static 'images/audio-btn.svg' %}" alt="" id="play-pause">
+                <input type="range" id="seek-bar" value="0" class="audio-input">
+            </div>
+            <audio id="audio">
+                <source src="{% static 'music/Amr Diab - Habibi.mp3' %}" type="audio/mpeg">
+                Your browser does not support the audio element.
+            </audio>
+            <img src="{% static 'images/check.svg' %}" alt="Check Icon" class="audio-check-icon">
+            <img src="{% static 'images/x-icon.svg' %}" alt="X Icon" class="audio-x-icon">
+        </div>
+        <fieldset class="audio-modal-footer">
+            <legend for="input-translation" class="labeline">So’zni kiriting</legend>
+            <input type="text" placeholder="Audiodagi so’zni kiriting" class="audio-modal-input"/>
+        </fieldset>
+        <div class="audio-modal-button-wrap">
+            <button class="audio-modal-button">Keyingi</button>
+        </div>
+    </div>
+</div>
+<!-- result modal -->
+<div class="result-modal hidden">
+    <div class="result-modal-content">
+        <div class="result-modal-header">
+            <h1 class="result-num" id="result-num">0.</h1> <!-- Updated to dynamic -->
+            <div class="progress-bar-container">
+                <div class="progress-bar" style="width: 100%;"></div>
+            </div>
+            <div>
+                <img src="{% static 'images/close-btn.svg' %}" alt="close btn" class="close-btn">
+            </div>
+        </div>
+        <div class="result-modal-body">
+            <div class="result-wrap">
+                <h1 class="result" id="correct-count">0</h1>
+                <img src="{% static 'images/check.svg' %}" alt="Check Icon" class="result-check-icon">
+            </div>
+            <div class="result-wrap">
+                <h1 class="result" id="incorrect-count">0</h1>
+                <img src="{% static 'images/x-icon.svg' %}" alt="X Icon" class="result-x-icon">
+            </div>
+        </div>
+        <div class="result-modal-footer">
+            <button class="result-modal-button--again">Qayta boshlash</button>
+            <!-- Changed button text to 'Yopish' and gave it an ID to handle closing the modal -->
+            <button class="result-modal-button" id="close-result-button">Yopish</button>
+        </div>
+    </div>
+</div>
+<footer>
+    <div class="container">
+        <div class="footer-content">
+            <div class="footer-content--left">
+                <p class="footer-title">Asoschilar</p>
+                <div class="footer-associates">
+                    <img src="{% static 'images/asoschi_1.svg' %}" alt="Founder 1">
+                </div>
+            </div>
+            <div class="footer-content--right">
+                <ul class="footer-links">
+                    <li class="footer-links-title">Bog’lanish</li>
+                    <li><a class="footer-links-item" href="mailto:zulxumor.nematova@bk.ru">zulxumor.nematova@bk.ru</a>
+                    </li>
+                </ul>
+                <ul class="footer-links">
+                    <li class="footer-links-title">Bo’limlar</li>
+                    <li><a class="footer-links-item" href="{% url 'homee' %}">Asosiy</a></li>
+                    <li><a class="footer-links-item" href="{% url 'essential' %}">Essential</a></li>
+                    <li><a class="footer-links-item" href="{% url 'test_user' %}">Test</a></li>
+                    <li><a class="footer-links-item" href="{% url 'speaking' %}">Speaking</a></li>
+                    <li><a class="footer-links-item" href="http://localhost:3000">Listening And Reading</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</footer>
+<script src="{% static 'js/main.js' %}"></script>
+<!-- Include the book_units_json in a script tag -->
+<script>
+    // Parsing book_units_json safely
+    const bookUnits = JSON.parse('{{ book_units_json|escapejs }}');
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const bookInput = document.getElementById('book-input');
+        const bookOptions = document.getElementById('book-options');
+        const unitInput = document.getElementById('unit-input');
+        const unitOptions = document.getElementById('unit-options');
+        const translationBody = document.getElementById('translation-body');
+        const form = document.getElementById('selection-form');
+
+        // Modal Elements
+        const essentialModal = document.querySelector('.essential-modal');
+        const essentialModalClose = essentialModal.querySelector('.close-btn');
+        const currentQuestionNumber = document.getElementById('current-question-number');
+        const progressBar = document.getElementById('progress-bar');
+        const currentQuestion = document.getElementById('current-question');
+        const answerInput = document.getElementById('answer-input');
+        const nextButton = document.getElementById('next-button');
+        const resultModal = document.querySelector('.result-modal');
+        const correctCountElem = document.getElementById('correct-count');
+        const incorrectCountElem = document.getElementById('incorrect-count');
+        const resultNumElem = document.getElementById('result-num');
+        const resultModalClose = resultModal.querySelector('.close-btn');
+        const resultAgainButton = resultModal.querySelector('.result-modal-button--again');
+        const closeResultButton = document.getElementById('close-result-button'); // New close button
+
+        let questions = [];
+        let currentQuestionIndex = 0;
+        let userAnswers = [];
+
+        // Function to toggle dropdown display
+        function toggleDropdown(input, options) {
+            input.addEventListener('click', function (e) {
+                e.stopPropagation();
+                options.style.display = options.style.display === 'block' ? 'none' : 'block';
+            });
+        }
+
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', function () {
+            bookOptions.style.display = 'none';
+            unitOptions.style.display = 'none';
+        });
+
+        // Initialize dropdown toggles
+        toggleDropdown(bookInput, bookOptions);
+        toggleDropdown(unitInput, unitOptions);
+
+        // Handle book selection
+        bookOptions.addEventListener('click', function (e) {
+            const option = e.target.closest('.dropdown-option');
+            if (option && option.getAttribute('data-value') !== null && option.getAttribute('data-value') !== '') {
+                const selectedValue = option.getAttribute('data-value');
+                const selectedText = option.firstChild.textContent.trim();
+                bookInput.value = selectedText;
+                bookInput.setAttribute('data-book-id', selectedValue);
+                bookOptions.style.display = 'none';
+
+                // Populate units based on selected book
+                if (selectedValue) {
+                    const units = bookUnits[selectedValue] || [];
+                    unitOptions.innerHTML = '<li class="dropdown-option" data-value="">Select Unit</li>';
+                    units.forEach(function (unit) {
+                        const li = document.createElement('li');
+                        li.classList.add('dropdown-option');
+                        li.setAttribute('data-value', unit.id);
+                        li.textContent = unit.unit_name;
+
+                        const iconDiv = document.createElement('div');
+                        iconDiv.classList.add('dropdown-option-icon');
+                        const iconImg = document.createElement('img');
+                        iconImg.src = "{% static 'images/icon-check.svg' %}";
+                        iconImg.alt = "Selected";
+                        iconDiv.appendChild(iconImg);
+
+                        li.appendChild(iconDiv);
+                        unitOptions.appendChild(li);
+                    });
+                } else {
+                    unitInput.value = '';
+                    unitOptions.innerHTML = '<li class="dropdown-option" data-value="">Select Unit</li>';
+                }
+
+                // Clear the translation table when book changes
+                clearTranslationTable();
+            }
+        });
+
+        // Handle unit selection
+        unitOptions.addEventListener('click', function (e) {
+            const option = e.target.closest('.dropdown-option');
+            if (option && option.getAttribute('data-value') !== null && option.getAttribute('data-value') !== '') {
+                const selectedValue = option.getAttribute('data-value');
+                const selectedText = option.firstChild.textContent.trim();
+                unitInput.value = selectedText;
+                unitInput.setAttribute('data-unit-id', selectedValue);
+                unitOptions.style.display = 'none';
+
+                // Fetch and display vocabs if a valid unit is selected
+                if (selectedValue) {
+                    fetchVocabs(selectedValue);
+                } else {
+                    clearTranslationTable();
+                }
+            }
+        });
+
+        // Function to clear the translation table
+        function clearTranslationTable() {
+            translationBody.innerHTML = `
+                <tr class="translation-row">
+                    <td class="translation-cell">Please select a Book and Unit to view vocabularies.</td>
+                    <td class="translation-cell"></td>
+                </tr>
+            `;
+        }
+
+        // Function to fetch vocabs via AJAX
+        function fetchVocabs(unitId) {
+            // Show loading message
+            translationBody.innerHTML = `
+                <tr class="translation-row">
+                    <td class="translation-cell">Loading...</td>
+                    <td class="translation-cell"></td>
+                </tr>
+            `;
+
+            fetch(`/get_vocabs/?unit_id=${unitId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.vocabs) {
+                        populateTranslationTable(data.vocabs);
+                    } else {
+                        translationBody.innerHTML = `
+                            <tr class="translation-row">
+                                <td class="translation-cell">No vocabularies found for the selected Unit.</td>
+                                <td class="translation-cell"></td>
+                            </tr>
+                        `;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching vocabs:', error);
+                    translationBody.innerHTML = `
+                        <tr class="translation-row">
+                            <td class="translation-cell">An error occurred while fetching vocabularies.</td>
+                            <td class="translation-cell"></td>
+                        </tr>
+                    `;
+                });
+        }
+
+        // Function to populate the translation table with vocabs
+        function populateTranslationTable(vocabs) {
+            // Clear existing table rows
+            translationBody.innerHTML = '';
+
+            if (vocabs.length === 0) {
+                translationBody.innerHTML = `
+                    <tr class="translation-row">
+                        <td class="translation-cell">No vocabularies available for this Unit.</td>
+                        <td class="translation-cell"></td>
+                    </tr>
+                `;
+                return;
+            }
+
+            // Populate table with vocabs
+            vocabs.forEach((vocab, index) => {
+                const row = document.createElement('tr');
+                row.classList.add('translation-row');
+
+                const englishCell = document.createElement('td');
+                englishCell.classList.add('translation-cell');
+                englishCell.textContent = `${index + 1}. ${vocab.en}`;
+
+                const uzbekCell = document.createElement('td');
+                uzbekCell.classList.add('translation-cell');
+                uzbekCell.textContent = `${index + 1}. ${vocab.uz}`;
+
+                row.appendChild(englishCell);
+                row.appendChild(uzbekCell);
+                translationBody.appendChild(row);
+            });
+        }
+
+        // Handle form submission to start the test
+        form.addEventListener('submit', function (e) {
+            e.preventDefault(); // Prevent the default form submission
+
+            const bookId = bookInput.getAttribute('data-book-id');
+            const unitId = unitInput.getAttribute('data-unit-id');
+
+            if (!bookId || !unitId) {
+                alert('Please select both Book and Unit before starting the test.');
+                return;
+            }
+
+            // Send AJAX request to start the test
+            fetch("{% url 'start_test' %}", {  // Use Django's URL template tag
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCSRFToken(),
+                },
+                body: JSON.stringify({'unit_id': unitId}),
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        questions = data.questions;
+                        currentQuestionIndex = 0;
+                        userAnswers = [];
+                        updateModal();
+                        openModal(essentialModal);
+                    } else {
+                        alert(data.message || 'An error occurred while starting the test.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error starting test:', error);
+                    alert('An error occurred while starting the test.');
+                });
+        });
+
+        // Function to get CSRF token from cookies
+        function getCSRFToken() {
+            let cookieValue = null;
+            const name = 'csrftoken';
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    // Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        // Function to update the modal with the current question
+        function updateModal() {
+            if (currentQuestionIndex < questions.length) {
+                const currentQ = questions[currentQuestionIndex];
+                currentQuestionNumber.textContent = `${currentQuestionIndex + 1}.`;
+                currentQuestion.textContent = currentQ.en; // Display English word
+                answerInput.value = '';
+                progressBar.style.width = `${((currentQuestionIndex + 1) / questions.length) * 100}%`;
+            }
+        }
+
+        // Function to open a modal
+        function openModal(modal) {
+            modal.classList.remove('hidden');
+        }
+
+        // Function to close a modal
+        function closeModal(modal) {
+            modal.classList.add('hidden');
+        }
+
+        // Handle modal close buttons
+        essentialModalClose.addEventListener('click', function () {
+            closeModal(essentialModal);
+        });
+        resultModalClose.addEventListener('click', function () {
+            closeModal(resultModal);
+        });
+
+        // Handle 'Keyingi' (Next) button in the essential modal
+        nextButton.addEventListener('click', function () {
+            const userAnswer = answerInput.value.trim();
+            if (userAnswer === '') {
+                alert('Please enter your translation before proceeding.');
+                return;
+            }
+
+            // Save the user's answer
+            const currentQ = questions[currentQuestionIndex];
+            userAnswers.push({'id': currentQ.id, 'answer': userAnswer});
+
+            currentQuestionIndex++;
+
+            if (currentQuestionIndex < questions.length) {
+                updateModal();
+            } else {
+                // All questions answered, submit the test
+                submitTest();
+            }
+        });
+
+        // Function to submit the test answers
+        function submitTest() {
+            const unitId = unitInput.getAttribute('data-unit-id');
+
+            fetch("{% url 'submit_test' %}", {  // Use Django's URL template tag
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCSRFToken(),
+                },
+                body: JSON.stringify({'unit_id': unitId, 'answers': userAnswers}),
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Update the result modal with the results
+                        correctCountElem.textContent = data.correct_count;
+                        incorrectCountElem.textContent = data.total - data.correct_count;
+                        resultNumElem.textContent = data.total; // Dynamically update "result-num"
+
+                        // Open the result modal
+                        openModal(resultModal);
+                        closeModal(essentialModal);
+                    } else {
+                        alert(data.message || 'An error occurred while submitting the test.');
+                        closeModal(essentialModal);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error submitting test:', error);
+                    alert('An error occurred while submitting the test.');
+                    closeModal(essentialModal);
+                });
+        }
+
+        // Handle 'Qayta boshlash' (Restart) button in the result modal
+        resultAgainButton.addEventListener('click', function () {
+            // Reset variables
+            currentQuestionIndex = 0;
+            userAnswers = [];
+            updateModal();
+            openModal(essentialModal);
+            closeModal(resultModal);
+        });
+
+        // Handle 'Yopish' (Close) button in the result modal
+        closeResultButton.addEventListener('click', function () {
+            closeModal(resultModal);
+        });
+    });
+</script>
+</body>
+</html>

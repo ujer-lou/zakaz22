@@ -1,0 +1,257 @@
+{% extends 'admin/admin.html' %}
+{% load static %}
+{% block content %}
+    <style>
+
+        .custom-modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.4);
+        }
+
+        .custom-modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 700px;
+        }
+
+        .custom-close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .custom-close:hover,
+        .custom-close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .custom-image-preview {
+            width: 100%;
+            height: auto;
+        }
+    </style>
+    <script>
+        function openModal(src) {
+            var modal = document.getElementById('customMyModal');
+            var modalImg = document.getElementById("customImg01");
+            modal.style.display = "block";
+            modalImg.src = src;
+        }
+
+        function closeModal() {
+            var modal = document.getElementById('customMyModal');
+            modal.style.display = "none";
+        }
+
+        function openAddModal() {
+            document.getElementById('addModal').style.display = 'block';
+        }
+
+        function closeAddModal(event) {
+            document.getElementById('addModal').style.display = 'none';
+        }
+    </script>
+    <div id="customMyModal" class="custom-modal" onclick="closeModal()">
+        <div class="custom-modal-content">
+            <span class="custom-close" onclick="closeModal()">&times;</span>
+            <img class="custom-image-preview" id="customImg01">
+        </div>
+    </div>
+    <form action="#" class="main__nav">
+        <div class="search">
+            <input type="search" name="problem_title" placeholder="Problem title"/>
+            <button>
+                <img src="{% static 'images/search-icon.svg' %}" alt="Search"/>
+            </button>
+        </div>
+        <div class="submit">
+            <button type="button" id="add-unit-btn" onclick="openAddModal()">Qo'shish</button>
+        </div>
+    </form>
+    <div class="unit-list">
+        <ul>
+            {% for writing in writings %}
+                <li id="row-{{ writing.id }}" class="unit-list-item">
+                    {{ forloop.counter }}. {{ writing.type|title }}: {{ writing.question }}
+                    {% if writing.photo %}
+                        <img src="{{ writing.photo.url }}" alt="{{ writing.name }}"
+                             style="width: 100px; height: auto; cursor: pointer;"
+                             onclick="openModal('{{ writing.photo.url }}')">
+                    {% else %}
+                        <p>Rasm mavjud emas.</p>
+                    {% endif %}
+                    <div class="custom-right">
+                        <img src="{% static 'images/edit-2 copy 3.svg' %}" alt="Edit"
+                             onclick="openEditModal('{{ writing.id }}')"/>
+                        <img src="{% static 'images/edit-2 copy 4.svg' %}" alt="Delete"
+                             class="delete-btn"
+                             data-writing-id="{{ writing.id }}"
+                             data-writing-name="{{ writing.name }}"
+                             onclick="openDeleteModal('{{ writing.id }}', '{{ writing.name }}')"/>
+                    </div>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+    <div class="pagination">
+        <div class="step-links">
+            {% if writings.has_previous %}
+                <a href="?page={{ writings.previous_page_number }}">« Previous</a>
+            {% endif %}
+
+            <span class="current">
+            Page {{ writings.number }} of {{ writings.paginator.num_pages }}.
+        </span>
+
+            {% if writings.has_next %}
+                <a href="?page={{ writings.next_page_number }}">Next »</a>
+            {% endif %}
+        </div>
+    </div>
+    <div id="addModal" class="modal-overlay" onclick="closeAddModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <span class="close-button" onclick="closeAddModal(event)">&times;</span>
+            <form id="addForm" action="{% url 'add_writing_task' %}" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <h2 class="form-title">Yangi Yozuv Qo'shish</h2>
+                <div class="form-section">
+                    <label for="type" class="form-label">Tur:</label>
+                    <select id="type" name="type" class="form-input" required>
+                        {% for choice, display in type_choices %}
+                            <option value="{{ choice }}">{{ display }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-section">
+                    <label for="question" class="form-label">Savol:</label>
+                    <textarea id="question" name="question" class="form-input" required></textarea>
+                </div>
+                <div class="form-section">
+                    <label for="photo" class="form-label">Rasm:</label>
+                    <input type="file" id="photo" name="photo" class="form-input">
+                </div>
+                <button type="submit" class="form-button">Saqlash</button>
+            </form>
+        </div>
+    </div>
+    <style>
+        .pagination {
+            text-align: center;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+
+        .pagination .step-links {
+            display: inline-block;
+            padding: 8px 15px;
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            color: #007bff;
+        }
+
+        .pagination .step-links a {
+            color: #007bff;
+            text-decoration: none;
+            margin: 0 10px;
+        }
+
+        .pagination .step-links a:hover {
+            text-decoration: underline;
+        }
+
+        .pagination .current {
+            padding: 8px 15px;
+            background-color: #e9ecef;
+            border-radius: 5px;
+            font-weight: bold;
+            margin: 0 10px;
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.6);
+        }
+
+        .modal-content {
+            background-color: #fff;
+            margin: 15% auto;
+            padding: 20px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+        }
+
+        .close-button {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close-button:hover,
+        .close-button:focus {
+            color: #333;
+            text-decoration: none;
+        }
+
+        .form-title {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .form-section {
+            margin-bottom: 10px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: bold;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .form-button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .form-button:hover {
+            background-color: #45a049;
+        }
+    </style>
+{% endblock %}

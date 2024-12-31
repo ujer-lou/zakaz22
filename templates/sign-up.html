@@ -1,0 +1,53 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Ro’yxatdan o’tish</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}"/>
+</head>
+<body>
+{% if step == '1' %}
+    <section id="step-1" class="registration-step">
+        <form method="POST">
+            {% csrf_token %}
+            <h1 class="step-title">Ro’yxatdan o’tish</h1>
+            <input type="email" name="email" class="input-email" placeholder="E-pochta" required>
+            <div class="next-btn-wrap">
+                <button class="next-btn" type="submit">Tasdiqlash</button>
+            </div>
+        </form>
+    </section>
+{% elif step == '2' %}
+    <section id="step-2" class="registration-step">
+        <form method="POST">
+            {% csrf_token %}
+            <h1 class="step-title">Ro’yxatdan o’tish</h1>
+            <p class="step-text"><span>{{ request.session.registration_email }}</span> pochtasiga jo’natilgan kodni
+                kiriting</p>
+            <input type="text" name="code" class="input-code" placeholder="Kodni kiriting" required>
+            <div class="next-btn-wrap">
+                <button class="next-btn" type="submit">Tasdiqlash</button>
+            </div>
+        </form>
+    </section>
+{% elif step == '3' %}
+    <section id="step-3" class="registration-step">
+        <form method="POST">
+            {% csrf_token %}
+            <h1 class="step-title">Ro’yxatdan o’tish</h1>
+            <p class="step-text">O’ziga hos parol o’ylab toping</p>
+            <input type="password" name="password" class="input-password" placeholder="Parol" required>
+            <div class="next-btn-wrap">
+                <button class="next-btn" type="submit">Tasdiqlash</button>
+            </div>
+        </form>
+    </section>
+{% endif %}
+
+{% for message in messages %}
+    <p>{{ message }}</p>
+{% endfor %}
+</body>
+</html>

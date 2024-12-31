@@ -1,0 +1,222 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- CSS faylini statik orqali yuklash -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <title>Document</title>
+</head>
+<body>
+<nav>
+    <div class="container">
+        <div class="nav-content">
+            <div class="nav-content--left">
+                <a href="/"><img src="{% static 'images/Logo 1.svg' %}" alt="Logo Essential" class="nav-logo"></a>
+                <div class="nav-link-wrap">
+                    <a class="nav-link" href="{% url 'essential' %}">Essential</a>
+                    <a class="nav-link" href="{% url 'test_user' %}">Testlar</a>
+                    <div class="dropdown">
+                        <a class="nav-link dropbtn">Writing</a>
+                        <div class="dropdown-content">
+                            <a href="{% url 'writing_task' task_type=1 %}">Task 1</a>
+                            <a href="{% url 'writing_task' task_type=2 %}">Task 2</a>
+                            <a href="{% url 'writing_task' task_type=3 %}">Full Test</a>
+                        </div>
+                    </div>
+                    <a class="nav-link" href="{% url 'speaking' %}">Speaking</a>
+                    <a class="nav-link" href="http://localhost:3000">Listening And Reading</a>
+                </div>
+            </div>
+            <script>
+                document.addEventListener('click', function (e) {
+                    if (e.target.matches('.dropbtn')) {
+                        var dropdown = e.target.nextElementSibling;
+                        dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+                    } else {
+                        var openDropdowns = document.querySelectorAll('.dropdown-content');
+                        openDropdowns.forEach(function (elem) {
+                            if (elem.style.display === 'block') {
+                                elem.style.display = 'none';
+                            }
+                        });
+                    }
+                });
+            </script>
+            <style>
+                /* Navigation link styling */
+                .nav-link-wrap {
+                    display: inline-block;
+                    position: relative;
+                }
+
+                /* Style for the dropdown button */
+                .dropbtn {
+                    background: none;
+                    border: none;
+                    color: black; /* Adjust color as per your theme */
+                    text-align: center;
+                    text-decoration: none;
+                    display: inline-block;
+                }
+
+                /* Dropdown content styling */
+                .dropdown-content {
+                    display: none;
+                    position: absolute;
+                    background-color: #f9f9f9; /* Light grey background */
+                    min-width: 160px;
+                    box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+                    z-index: 1;
+                }
+
+                /* Dropdown link styling */
+                .dropdown-content a {
+                    color: black;
+                    padding: 12px 16px;
+                    text-decoration: none;
+                    display: block;
+                    text-align: left;
+                }
+
+                /* Show the dropdown menu on hover */
+                .dropdown:hover .dropdown-content {
+                    display: block;
+                }
+
+                /* Change color of dropdown links on hover */
+                .dropdown-content a:hover {
+                    background-color: #f1f1f1; /* Light grey hover */
+                }
+
+                /* Dropdown container */
+                .dropdown {
+                    display: inline-block;
+                }
+            </style>
+            <div class="nav-content--right">
+                {% if user.is_authenticated %}
+                    {% if user.is_superuser %}
+                        <a class="nav-button" href="{% url 'admin-main' %}">Admin menu</a>
+                        <form method="POST" action="{% url 'logout' %}" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="nav-button">Logout</button>
+                        </form>
+                    {% else %}
+                        <a class="nav-button" href="{% url 'homee' %}">Profile</a>
+                        <form method="POST" action="{% url 'logout' %}" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="nav-button">Logout</button>
+                        </form>
+                    {% endif %}
+                {% else %}
+                    <a class="nav-button" href="{% url 'register' %}">Register</a>
+                    <a class="nav-button" href="{% url 'login' %}">Login</a>
+                {% endif %}
+            </div>
+
+        </div>
+    </div>
+</nav>
+<section class="learning-section">
+    <div class="container">
+        <div class="learning-content">
+            <div class="learning-content-left">
+                <h1 class="learning-title">Ingliz tilini biz bilan o’rganing</h1>
+                <p class="learning-description">It is simple platform which helps you to improve your english level with
+                    interesting games, simple tasks and exams, </p>
+                <a href="{% url 'essential' %}" class="learning-button">Boshlash</a>
+            </div>
+            <div class="learning-content-right">
+                <div class="learning-img">
+                    <!-- Rasmlarni statik orqali yuklash -->
+                    <img src="{% static 'images/Group.png' %}" alt="Learning English">
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<section class="vocabulary-section">
+    <div class="container">
+        <div class="vocabulary-content">
+            <div class="vocabulary-content-left">
+                <p class="vocabulary-label">Essentials</p>
+                <h1 class="vocabulary-title">So’z boyligini oshiring !!!</h1>
+                <p class="vocabulary-description">Ushbu bo’limda siz Essential kitoblarida so’zlarni uzbtest_userek tilidagi
+                    <span>qiyqiriq</span> tarjimalari bilan yod olishingiz mumkin.</p>
+                <a class="vocabulary-button" href="{% url 'essential' %}">Olg’a</a>
+            </div>
+            <div class="vocabulary-content-right">
+                <div class="vocabulary-img">
+                    <img src="{% static 'images/Group(1).png' %}" alt="Vocabulary Illustration">
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<section class="games-section">
+    <div class="container">
+        <div class="games-content">
+            <div class="games-content-left">
+                <div class="games-img">
+                    <img src="{% static 'images/Frame.png' %}" alt="Games Illustration">
+                </div>
+            </div>
+            <div class="games-content-right">
+                <p class="games-label">Games</p>
+                <h1 class="games-title">O’yin o’ynab o’rganish ?</h1>
+                <p class="games-description">Bizning saytimizda <span>yangicha</span> uslublardan foydalanib
+                    bilimingizni oshirishingiz mumkin, ulardan biri , oyinlar orqali.</p>
+                <a class="games-button" href="{% url 'essential' %}">Olg’a</a>
+            </div>
+        </div>
+    </div>
+</section>
+<section class="test-section">
+    <div class="container">
+        <div class="test-content">
+            <div class="test-content-left">
+                <p class="test-label">Test</p>
+                <h1 class="test-title">Bilimlimingizni tekshiring</h1>
+                <p class="test-description">Ingiliz tilidagi bilimlaringizni qaysi darajada ekanligini ushbu bo’limda
+                    bilib olishingiz mumkin. </p>
+                <a class="test-button" href="{% url 'essential' %}">Olg’a</a>
+            </div>
+            <div class="test-content-right">
+                <div class="test-img">
+                    <img src="{% static 'images/Frame (1).png' %}" alt="Test Illustration">
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<footer>
+    <div class="container">
+        <div class="footer-content">
+            <div class="footer-content--left">
+                <p class="footer-title">Asoschilar</p>
+                <div class="footer-associates">
+                    <img src="{% static 'images/asoschi_1.svg' %}" alt="Founder 1">
+                </div>
+            </div>
+            <div class="footer-content--right">
+                <ul class="footer-links">
+                    <li class="footer-links-title">Bog’lanish</li>
+                    <li><a class="footer-links-item" href="mailto:zulxumor.nematova@bk.ru">zulxumor.nematova@bk.ru</a>
+                    </li>
+                </ul>
+                <ul class="footer-links">
+                    <li class="footer-links-title">Bo’limlar</li>
+                    <li><a class="footer-links-item" href="{% url 'homee' %}">Asosiy</a></li>
+                    <li><a class="footer-links-item" href="{% url 'essential' %}">Essential</a></li>
+                    <li><a class="footer-links-item" href="{% url 'test_user' %}">Test</a></li>
+                    <li><a class="footer-links-item" href="{% url 'speaking' %}">Speaking</a></li>
+                    <li><a class="footer-links-item" href="http://localhost:3000">Listening And Reading</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</footer>
+</body>
+</html>

@@ -1,0 +1,124 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}"/>
+    <title>Admin Panel</title>
+</head>
+<body>
+<div class="wrapper">
+    <meta name="csrf-token" content="{{ csrf_token }}">
+
+    <aside>
+        <meta name="csrf-token" content="{{ csrf_token }}">
+        <div class="logo">
+            <a href="{% url 'homee' %}"><img src="{% static 'images/Logo 1.svg' %}" alt="Logo"/></a>
+        </div>
+        <div class="menu">
+            <div class="menu-item units">
+                <a href="{% url 'units' %}">
+                    <button>
+                        <img src="{% static 'images/unit-icon.svg' %}" alt="Units"/> Units
+                    </button>
+                </a>
+            </div>
+            <div class="menu-item books">
+                <a href="{% url 'books' %}">
+                    <button>
+                        <img src="{% static 'images/unit-icon.svg' %}" alt="Books"/> Books
+                    </button>
+                </a>
+            </div>
+            <div class="menu-item writing">
+                <button class="toggle-submenu">
+                    <img src="{% static 'images/unit-icon.svg' %}" alt="Writing"/> Writing
+                </button>
+                <div class="submenu" style="display: none;">
+                    <ul>
+                        <li><a href="{% url 'task1' %}">Task 1</a></li>
+                        <li><a href="{% url 'task2' %}">Task 2</a></li>
+                    </ul>
+                </div>
+            </div>
+            <script>
+                document.addEventListener("DOMContentLoaded", function () {
+                    const toggle = document.querySelector('.toggle-submenu');
+                    toggle.addEventListener('click', function (e) {
+                        const submenu = this.nextElementSibling;
+                        submenu.style.display = submenu.style.display === 'block' ? 'none' : 'block';
+                    });
+                });
+            </script>
+            <style>
+                .menu-item {
+                    margin-bottom: 10px;
+                }
+
+                .toggle-submenu {
+                    background-color: #8BC34A; /* Yorqin yashil rang */
+                    color: white;
+                    border: none;
+                    width: 100%;
+                    padding: 10px;
+                    font-size: 16px;
+                    text-align: left;
+                    cursor: pointer;
+                    outline: none;
+                    border-radius: 5px;
+                    transition: background-color 0.3s;
+                }
+
+                .toggle-submenu:hover {
+                    background-color: #7CB342; /* Rangni qorong'ilash uchun hover effekti */
+                }
+
+                .submenu {
+                    background-color: #F9F9F9;
+                    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+                    border-radius: 5px;
+                    margin-top: 5px;
+                }
+
+                .submenu ul {
+                    list-style: none;
+                    padding: 10px;
+                }
+
+                .submenu ul li a {
+                    display: block;
+                    color: #333;
+                    padding: 8px;
+                    text-decoration: none;
+                    transition: background-color 0.2s;
+                }
+
+                .submenu ul li a:hover {
+                    background-color: #E0E0E0;
+                    cursor: pointer;
+                }
+            </style>
+            <div class="menu-item vocab">
+                <a href="{% url 'vocab' %}">
+                    <button>
+                        <img src="{% static 'images/unit-icon.svg' %}" alt="Vocab"/> Vocabulary
+                    </button>
+                </a>
+            </div>
+            <div class="menu-item tests">
+                <a href="{% url 'tests' %}">
+                    <button>
+                        <img src="{% static 'images/unit-icon.svg' %}" alt="Tests"/> Tests
+                    </button>
+                </a>
+            </div>
+        </div>
+    </aside>
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+</div>
+</body>
+</html>

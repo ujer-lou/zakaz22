@@ -1,0 +1,538 @@
+{% extends 'admin/admin.html' %}
+{% load static %}
+{% block content %}
+    <form action="#" class="main__nav">
+        <div class="search">
+            <input type="search" name="problem_title" placeholder="Problem title"/>
+            <button>
+                <img src="{% static 'images/search-icon.svg' %}" alt="Search"/>
+            </button>
+        </div>
+        <div class="submit">
+            <button type="button" id="add-unit-btn">Qo'shish</button>
+        </div>
+    </form>
+    <div class="unit-list">
+        <ul>
+            {% for unit in units %}
+                <li id="row-{{ unit.id }}" class="unit-list-item">
+                    {{ forloop.counter }}. Unit {{ unit.unit_num }}: {{ unit.unit_name }}
+                    <div class="right">
+                        <span>{{ unit.book.name }}</span>
+                        <img src="{% static 'images/edit-2 copy 3.svg' %}" alt="edit"
+                             onclick="openEditModal('{{ unit.id }}')"/>
+                        <img
+                                src="{% static 'images/edit-2 copy 4.svg' %}"
+                                alt="delete"
+                                class="delete-btn"
+                                data-unit-id="{{ unit.id }}"
+                                data-unit-name="{{ unit.unit_name }}"
+                                onclick="openDeleteModal('{{ unit.id }}', '{{ unit.unit_name }}')"
+                        />
+                    </div>
+                </li>
+            {% empty %}
+                <li>Hozircha hech qanday unit mavjud emas.</li>
+            {% endfor %}
+        </ul>
+    </div>
+    <div class="overlay hidden"></div> <!-- Overlay element -->
+    <div class="modal hidden">
+        <form id="add-unit-form" action="{% url 'add_unit' %}" method="POST">
+            {% csrf_token %}
+            <h1>Unit qo’shish</h1>
+            <input type="text" name="unit_name" placeholder="Unit nomi" required>
+            <input type="number" name="unit_num" placeholder="Unit raqami" required>
+            <select name="book" required>
+                <option value="" disabled selected>Kitobni tanlang</option>
+                {% for book in books %}
+                    <option value="{{ book.id }}">{{ book.name }}</option>
+                {% endfor %}
+            </select>
+            <div class="buttons">
+                <button class="button cancel-button universal-btn" type="button" onclick="closeModal()">Orqaga</button>
+                <button class="universal-btn add-btn" type="submit">Qo'shish</button>
+            </div>
+        </form>
+    </div>
+    <div id="overlay" class="overlay hidden"></div>
+    <div id="delete-confirmation-modal" style="display: none;" class="modal">
+        <div class="modal-content">
+            <h2>O'chirishni tasdiqlash</h2>
+            <p id="delete-message">Haqiqatan ham ushbu elementni o'chirmoqchimisiz?</p>
+            <div class="modal-buttons">
+                <button class="button cancel-button" onclick="closeDeleteModal()">Orqaga</button>
+                <button class="button delete-button" onclick="confirmDelete()">O'chirish</button>
+            </div>
+        </div>
+    </div>
+    <div id="success-message"
+         style="display: none; position: fixed; top: 50px; left: 50%; transform: translateX(-50%); background-color: #28a745; color: white; padding: 10px 20px; border-radius: 4px; z-index: 1000; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+        Unit muvaffaqiyatli yangilandi!
+    </div>
+    <div id="edit-unit-modal" style="display: none;">
+        <div class="modal-content">
+            <h2>Unitni tahrirlash</h2>
+            <form id="edit-unit-form" method="post" action="">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="edit-unit-num">Unit raqami:</label>
+                    <input type="text" id="edit-unit-num" name="unit_num" placeholder="Unit raqami" required/>
+                </div>
+                <div class="form-group">
+                    <label for="edit-unit-name">Unit nomi:</label>
+                    <input type="text" id="edit-unit-name" name="unit_name" placeholder="Unit nomi" required/>
+                </div>
+                <div class="form-group">
+                    <label for="edit-book">Kitob:</label>
+                    <select id="edit-book" name="book" required>
+                        {% for book in books %}
+                            <option value="{{ book.id }}">{{ book.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="modal-buttons">
+                    <button type="button" class="back-btn" onclick="closeEditModal()">Orqaga</button>
+                    <button type="submit" class="submit-btn">Saqlash</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div id="message-container" class="hidden message-box">
+        <p id="message-text"></p>
+    </div>
+    <style>
+        #success-message {
+            animation: fadeInOut 3s ease-in-out;
+        }
+
+        @keyframes fadeInOut {
+            0% {
+                opacity: 0;
+            }
+            20% {
+                opacity: 1;
+            }
+            80% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
+            }
+        }
+    </style>
+    <style>
+        .overlay {
+            background-color: rgba(74, 65, 65, 0.4); /* Bright red for testing */
+        }
+
+
+        /* Make sure this is visible when modal is active */
+        .overlay.show {
+            display: block;
+        }
+
+        /* Modal Buttons Container */
+        .modal-buttons {
+            display: flex;
+            justify-content: space-around;
+            padding: 10px;
+        }
+
+        /* General Button Styles */
+        .button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Hover Effect for All Buttons */
+        .button:hover {
+            opacity: 0.9;
+            transform: translateY(-2px); /* Slight lift on hover */
+        }
+
+        /* "Orqaga" (Cancel) Button Styles */
+        .cancel-button {
+            background-color: #17a2b8; /* Light blue background */
+            color: white; /* White text */
+            box-shadow: 0 2px 4px rgba(23, 162, 184, 0.5); /* Subtle shadow */
+        }
+
+        .cancel-button:hover {
+            background-color: #138496; /* Darker blue on hover */
+        }
+
+        /* "O'chirish" (Delete) Button Styles */
+        .delete-button {
+            background-color: #dc3545; /* Red background */
+            color: white; /* White text */
+            box-shadow: 0 2px 4px rgba(220, 53, 69, 0.5); /* Subtle shadow */
+        }
+
+        .delete-button:hover {
+            background-color: #c82333; /* Darker red on hover */
+        }
+
+        /* Optional: Add Focus Styles for Accessibility */
+        .button:focus {
+            outline: 2px solid #004085; /* Blue outline for focus */
+            outline-offset: 2px;
+        }
+
+        /* Responsive Design: Adjust Button Padding on Smaller Screens */
+        @media (max-width: 768px) {
+            .button {
+                padding: 8px 16px;
+                font-size: 14px;
+            }
+        }
+
+        .message-box {
+            position: fixed; /* Fixed position to keep it at the top */
+            top: 20px; /* Distance from the top */
+            left: 50%; /* Center horizontally */
+            transform: translateX(-50%); /* Align center */
+            z-index: 1000; /* Ensure it is on top */
+            display: flex;
+            justify-content: center;
+            width: auto;
+            padding: 10px 20px;
+            border-radius: 4px;
+            color: white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            max-width: 80%;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .message-success {
+            background-color: #28a745; /* Green for success */
+        }
+
+        .message-error {
+            background-color: #dc3545; /* Red for error */
+        }
+
+        select {
+            appearance: none;
+            background-color: #f3f4f6;
+            border: 1px solid #d1d5db;
+            border-radius: 5px;
+            padding: 10px 15px;
+            font-size: 16px;
+            color: #111827;
+            cursor: pointer;
+            width: 100%;
+            outline: none;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        select:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 4px rgba(37, 99, 235, 0.5);
+        }
+
+        option {
+            background-color: #fff;
+            color: #111827;
+        }
+    </style>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Xabar box stili
+            const successMessageBox = document.getElementById('success-message');
+            successMessageBox.style.fontFamily = 'Arial, sans-serif';
+            successMessageBox.style.fontSize = '16px';
+            successMessageBox.style.textAlign = 'center';
+
+            // Modalni ochishdan oldin stil o'zgartirish
+            const modal = document.getElementById('edit-unit-modal');
+            const modalContent = modal.querySelector('.modal-content');
+            const formGroups = modalContent.querySelectorAll('.form-group');
+            const labels = modalContent.querySelectorAll('label');
+            const inputs = modalContent.querySelectorAll('input, select');
+            const modalTitle = modalContent.querySelector('h2');
+
+            // Sarlavha stilini o'zgartirish
+            modalTitle.style.fontFamily = 'Arial, sans-serif';
+            modalTitle.style.fontSize = '24px';
+            modalTitle.style.marginBottom = '20px';
+
+            // Form-group orasiga oraliq
+            formGroups.forEach(group => {
+                group.style.marginBottom = '15px';
+            });
+
+            // Label stilini o'zgartirish
+            labels.forEach(label => {
+                label.style.display = 'block';
+                label.style.fontSize = '14px';
+                label.style.fontFamily = 'Arial, sans-serif';
+                label.style.marginBottom = '5px';
+            });
+
+            // Input va selectlarni tekshirish
+            inputs.forEach(input => {
+                input.style.width = '100%';
+                input.style.padding = '10px';
+                input.style.border = '1px solid #ccc';
+                input.style.borderRadius = '4px';
+                input.style.fontFamily = 'Arial, sans-serif';
+                input.style.fontSize = '14px';
+            });
+
+            // Tugmalarni yaxshilash (oldin ham berilgan)
+            const buttons = document.querySelectorAll('.modal-buttons button');
+            buttons.forEach(button => {
+                button.style.padding = '10px 20px';
+                button.style.border = 'none';
+                button.style.borderRadius = '4px';
+                button.style.cursor = 'pointer';
+                button.style.transition = 'background-color 0.3s ease';
+                button.style.fontFamily = 'Arial, sans-serif';
+                button.style.fontSize = '14px';
+                button.style.margin = '0 5px'; // Tugmalar orasidagi oraliq
+            });
+
+            const backBtn = document.querySelector('.back-btn');
+            backBtn.style.backgroundColor = '#17a2b8'; // Oqimtir
+            backBtn.style.color = 'white';
+            backBtn.addEventListener('mouseover', () => {
+                backBtn.style.backgroundColor = '#138496';
+            });
+            backBtn.addEventListener('mouseout', () => {
+                backBtn.style.backgroundColor = '#17a2b8';
+            });
+
+            const submitBtn = document.querySelector('.submit-btn');
+            submitBtn.style.backgroundColor = '#28a745'; // Yashil
+            submitBtn.style.color = 'white';
+            submitBtn.addEventListener('mouseover', () => {
+                submitBtn.style.backgroundColor = '#218838';
+            });
+            submitBtn.addEventListener('mouseout', () => {
+                submitBtn.style.backgroundColor = '#28a745';
+            });
+        });
+
+        function openEditModal(unitId) {
+            fetch(`/panel_admin/edit-unit/${unitId}/`)
+                .then(response => response.json())
+                .then(data => {
+                    // Forma ma'lumotlarini to'ldirish
+                    document.querySelector('#edit-unit-num').value = data.unit_num;
+                    document.querySelector('#edit-unit-name').value = data.unit_name;
+                    document.querySelector('#edit-book').value = data.book_id;
+
+                    // Formaning action atributini dinamik o'rnatish
+                    document.querySelector('#edit-unit-form').action = `/panel_admin/edit-unit/${unitId}/`;
+
+                    // Modalni ochish va stil berish
+                    const modal = document.getElementById('edit-unit-modal');
+                    modal.style.display = 'flex';
+                    modal.style.position = 'fixed';
+                    modal.style.top = '0';
+                    modal.style.left = '0';
+                    modal.style.width = '100%';
+                    modal.style.height = '100%';
+                    modal.style.backgroundColor = 'rgba(0, 0, 0, 0.6)';
+                    modal.style.zIndex = '1000';
+                    modal.style.justifyContent = 'center';
+                    modal.style.alignItems = 'center';
+
+                    const modalContent = modal.querySelector('.modal-content');
+                    modalContent.style.backgroundColor = '#fff';
+                    modalContent.style.padding = '20px 30px';
+                    modalContent.style.borderRadius = '8px';
+                    modalContent.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.2)';
+                    modalContent.style.width = '90%';
+                    modalContent.style.maxWidth = '400px';
+                    modalContent.style.fontFamily = 'Arial, sans-serif';
+                })
+                .catch(error => console.error('Error fetching unit details:', error));
+        }
+
+        function closeEditModal() {
+            const modal = document.getElementById('edit-unit-modal');
+            modal.style.display = 'none';
+        }
+
+        function showSuccessMessageAfterReload() {
+            localStorage.setItem('successMessage', 'Unit muvaffaqiyatli yangilandi!');
+            window.location.reload(); // Sahifani yangilash
+        }
+
+        // Sahifa yuklangandan keyin xabarni ko'rsatish
+        document.addEventListener('DOMContentLoaded', function () {
+            const successMessage = localStorage.getItem('successMessage');
+            if (successMessage) {
+                const messageBox = document.getElementById('success-message');
+                messageBox.textContent = successMessage; // Xabarni o'rnatish
+                messageBox.style.display = 'block'; // Xabarni ko'rsatish
+
+                // Xabarni 3 soniyadan keyin yashirish
+                setTimeout(() => {
+                    messageBox.style.display = 'none';
+                    localStorage.removeItem('successMessage'); // Xabarni o'chirish
+                }, 3000);
+            }
+        });
+
+        // Forma yuborilishi (saqlash)
+        document.querySelector('#edit-unit-form').addEventListener('submit', function (event) {
+            event.preventDefault(); // Formani odatiy yuborishni to‘xtatish
+
+            const formData = new FormData(this);
+
+            fetch(this.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value // CSRF tokenni qo'shish
+                }
+            })
+                .then(response => {
+                    if (response.ok) {
+                        return response.json();
+                    } else {
+                        throw new Error(`Error: ${response.status}`);
+                    }
+                })
+                .then(data => {
+                    if (data.success) {
+                        showSuccessMessageAfterReload();
+                    } else {
+                        console.error('Validation errors:', data.errors);
+                        alert('Xatolik yuz berdi: ' + JSON.stringify(data.errors));
+                    }
+                })
+                .catch(error => console.error('Saqlashda xatolik yuz berdi:', error));
+        });
+
+
+        let itemToDelete = null;
+
+        function openModal() {
+            document.querySelector('.modal').classList.remove('hidden');
+            document.querySelector('.modal').classList.add('active');
+            document.querySelector('.overlay').classList.remove('hidden');
+            document.querySelector('.overlay').classList.add('active');
+        }
+
+        function closeModal() {
+            document.querySelector('.modal').classList.add('hidden');
+            document.querySelector('.modal').classList.remove('active');
+            document.querySelector('.overlay').classList.add('hidden');
+            document.querySelector('.overlay').classList.remove('active');
+        }
+
+        document.querySelector('.overlay').addEventListener('click', closeModal);
+        document.querySelector('#add-unit-btn').addEventListener('click', function () {
+            openModal();
+        });
+
+        $('#add-unit-form').on('submit', function (e) {
+            e.preventDefault();
+            $.ajax({
+                url: "/panel_admin/add-unit/",
+                type: "POST",
+                data: $(this).serialize(),
+                success: function (response) {
+                    if (response.success) {
+                        alert(response.message);
+                        setTimeout(function () {
+                            window.location.href = "/panel_admin/units/";
+                        }, 2000);
+                    } else {
+                        alert(response.error);
+                    }
+                },
+                error: function () {
+                    alert("Serverda xatolik yuz berdi.");
+                }
+            });
+        });
+
+        function openDeleteModal(unitId, unitName) {
+            const deleteMessage = document.getElementById('delete-message');
+            deleteMessage.textContent = `Haqiqatan ham "${unitName}" nomli elementni o'chirmoqchimisiz?`; // O'chirilayotgan element nomini ko'rsatish
+            itemToDelete = unitId; // O'chirilayotgan element ID'ni saqlash
+            const overlay = document.getElementById('overlay');
+            const modal = document.getElementById('delete-confirmation-modal');
+            overlay.classList.add('show');
+            modal.style.display = 'flex';
+        }
+
+        function confirmDelete() {
+            if (!itemToDelete) return;
+            fetch(`/panel_admin/delete-unit/${itemToDelete}/`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById(`row-${itemToDelete}`).remove();
+                        showMessage(data.message, 'success');
+                    } else {
+                        showMessage(data.message, 'error');
+                    }
+                    closeDeleteModal();
+                })
+                .catch(() => {
+                    showMessage("Serverda xatolik yuz berdi.", 'error');
+                    closeDeleteModal();
+                });
+        }
+
+
+        function closeDeleteModal() {
+            console.log("Closing modal...");
+            const overlay = document.getElementById('overlay');
+            const modal = document.getElementById('delete-confirmation-modal');
+            overlay.classList.remove('show');
+            modal.style.display = 'none';
+        }
+
+
+        function showMessage(message, type) {
+            const messageContainer = document.getElementById('message-container');
+            const messageText = document.getElementById('message-text');
+            messageText.textContent = message; // Set the message text
+            messageContainer.className = `message-box ${type === 'success' ? 'message-success' : 'message-error'}`; // Set the class for styling
+            messageContainer.classList.remove('hidden'); // Show the message container
+
+            // Optionally hide the message after 5 seconds
+            setTimeout(() => {
+                messageContainer.classList.add('hidden');
+            }, 5000);
+        }
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.startsWith(name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    </script>
+{% endblock %}

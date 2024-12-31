@@ -1,0 +1,265 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}"/><!-- Your main CSS -->
+    <title>Tests</title>
+</head>
+<body>
+<!-- ===================== NAVIGATION ===================== -->
+<nav>
+    <div class="container">
+        <div class="nav-content">
+            <div class="nav-content--left">
+                <a href="/">
+                    <img src="{% static 'images/Logo 1.svg' %}" alt="Logo Essential" class="nav-logo">
+                </a>
+                <div class="nav-link-wrap">
+                    <a class="nav-link" href="{% url 'essential' %}">Essential</a>
+                    <a class="nav-link" href="{% url 'test_user' %}">Testlar</a>
+                    <a class="nav-link" href="{% url 'speaking' %}">Speaking</a>
+                </div>
+            </div>
+
+            <style>
+                /* Navigation link styling */
+                .nav-link-wrap {
+                    display: inline-block;
+                    position: relative;
+                }
+
+                .dropbtn {
+                    background: none;
+                    border: none;
+                    color: black;
+                    cursor: pointer;
+                }
+
+                .dropdown-content {
+                    display: none;
+                    position: absolute;
+                    background-color: #f9f9f9;
+                    min-width: 160px;
+                    box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+                    z-index: 1;
+                }
+
+                .dropdown-content a {
+                    color: black;
+                    padding: 12px 16px;
+                    text-decoration: none;
+                    display: block;
+                }
+
+                .dropdown {
+                    display: inline-block;
+                }
+            </style>
+
+            <div class="nav-content--right">
+                {% if user.is_authenticated %}
+                    {% if user.is_superuser %}
+                        <a class="nav-button" href="{% url 'admin-main' %}">Admin menu</a>
+                        <form method="POST" action="{% url 'logout' %}" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="nav-button">Logout</button>
+                        </form>
+                    {% else %}
+                        <a class="nav-button" href="{% url 'homee' %}">Profile</a>
+                        <form method="POST" action="{% url 'logout' %}" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="nav-button">Logout</button>
+                        </form>
+                    {% endif %}
+                {% else %}
+                    <a class="nav-button" href="{% url 'register' %}">Register</a>
+                    <a class="nav-button" href="{% url 'login' %}">Login</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- ===================== TEST FORM SECTION ===================== -->
+<section class="test-form">
+    <div class="container">
+        <form class="test-form-content">
+            <div class="wrapper end-wrapper">
+                <fieldset class="form-group" style="cursor: text;">
+                    <legend for="form-input" class="form-label">Savollar soni</legend>
+                    <div class="dropdown-wrapper" style="cursor: text;">
+                        <input type="text" id="form-input" value="20" style="cursor: text;">
+                    </div>
+                </fieldset>
+                <fieldset class="form-group">
+                    <legend for="form-input" class="form-label">Savolar turi</legend>
+                    <div class="dropdown-wrapper">
+                        <input type="text" id="form-input" value="Matn" readonly>
+                        <img class="dropdown-icon" src="{% static 'images/Vector.svg' %}" alt="Dropdown arrow">
+                    </div>
+                    <ul class="dropdown-options">
+                        <li class="dropdown-option">
+                            Matn
+                            <div class="dropdown-option-icon">
+                                <img src="{% static 'images/icon-check.svg' %}" alt="">
+                            </div>
+                        </li>
+                        <li class="dropdown-option">
+                            Audio
+                            <div class="dropdown-option-icon">
+                                <img src="{% static 'images/icon-check.svg' %}" alt="">
+                            </div>
+                        </li>
+                        <li class="dropdown-option">
+                            Aralash
+                            <div class="dropdown-option-icon">
+                                <img src="{% static 'images/icon-check.svg' %}" alt="">
+                            </div>
+                        </li>
+                    </ul>
+                </fieldset>
+                <button class="unversal-btn start-test-button">Boshlash</button>
+            </div>
+            <button class="unversal-btn clear-form-button">Tozalash</button>
+        </form>
+        <button class="reset-form-button hidden">Hammasini o’chirish</button>
+    </div>
+</section>
+
+<!-- ===================== "ADD" BUTTON SECTION ===================== -->
+<section>
+    <div class="container">
+        <div class="wrapper selection-bar">
+            <!-- This triggers the book overlay -->
+            <img class="add-btn" src="{% static 'images/add-icon.svg' %}" alt="Add icon"/>
+        </div>
+    </div>
+</section>
+
+<!-- ===================== FOOTER ===================== -->
+<footer>
+    <div class="container">
+        <div class="footer-content">
+            <div class="footer-content--left">
+                <p class="footer-title">Asoschilar</p>
+                <div class="footer-associates">
+                    <img src="{% static 'images/asoschi_1.svg' %}" alt="Founder 1">
+                </div>
+            </div>
+            <div class="footer-content--right">
+                <ul class="footer-links">
+                    <li class="footer-links-title">Bog’lanish</li>
+                    <li><a class="footer-links-item" href="mailto:zulxumor.nematova@bk.ru">zulxumor.nematova@bk.ru</a>
+                    </li>
+                </ul>
+                <ul class="footer-links">
+                    <li class="footer-links-title">Bo’limlar</li>
+                    <li><a class="footer-links-item" href="{% url 'homee' %}">Asosiy</a></li>
+                    <li><a class="footer-links-item" href="{% url 'essential' %}">Essential</a></li>
+                    <li><a class="footer-links-item" href="{% url 'test_user' %}">Test</a></li>
+                    <li><a class="footer-links-item" href="{% url 'speaking' %}">Speaking</a></li>
+                    <li><a class="footer-links-item" href="http://localhost:3000">Listening And Reading</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- ========================================================= -->
+<!--  1) Mavzular MODAL (STAYS HIDDEN INITIALLY)               -->
+<!--     EXACT markup from your snippet: .modal.hidden         -->
+<!-- ========================================================= -->
+<div class="modal hidden" id="topicsModal">
+    <div class="dropdown-wrapper">
+        <div class="wrapper">
+            <span>Topics:</span>
+            <div class="selected-options"></div>
+            <ul>
+                {% for unit in units %}
+                    <li>{{ unit.name }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+<!-- ========================================================= -->
+<!--  2) OVERLAY (BOOK LIST) EXACT markup from your snippet:   -->
+<!--     .overlay.hidden => inside is a .modal with .books-list-->
+<!-- ========================================================= -->
+<div class="overlay hidden" id="bookOverlay">
+    <div class="modal">
+        <ul class="books-list">
+            {% for book in books %}
+                <li class="book-item">
+                    <label for="book{{ book.id }}" class="book-label">
+                        <!-- Book image from DB -->
+                        <img src="{{ book.image.url }}"
+                             alt="{{ book.name }}"
+                             class="book-image">
+                        <!-- Book name from DB -->
+                        <span class="book-title">{{ book.name }}</span>
+
+                        <!-- Keep your arrow icon -->
+                        <img src="{% static 'images/book-arrow.svg' %}" alt="Arrow" class="arrow-icon">
+                    </label>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+
+<!-- ===================== JS FILES ===================== -->
+<script src="{% static 'js/test.js' %}"></script>
+<script src="{% static 'js/main.js' %}"></script>
+
+<!-- ===================== INLINE LOGIC ===================== -->
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // Elements
+        const addBtn = document.querySelector('.add-btn');
+        const bookOverlay = document.getElementById('bookOverlay');
+        const topicsModal = document.getElementById('topicsModal');
+        const closeTopics = document.getElementById('closeTopics');
+
+        // 1) Click "Add" => show the overlay (books)
+        addBtn.addEventListener('click', () => {
+            bookOverlay.classList.remove('hidden'); // show overlay
+        });
+
+        // 2) Clicking on ANY .book-item => hide overlay, show Topics
+        const booksList = document.querySelector('.books-list');
+        booksList.addEventListener('click', (event) => {
+            if (event.target.closest('.book-item')) {
+                bookOverlay.classList.add('hidden');     // hide book overlay
+                topicsModal.classList.remove('hidden'); // show Topics modal
+            }
+        });
+
+        // 3) If user clicks "Close" on Topics
+        closeTopics.addEventListener('click', () => {
+            topicsModal.classList.add('hidden');
+        });
+    });
+
+    // Kitobni tanlaganda mavzularni yuklash
+    booksList.addEventListener('click', (event) => {
+        let selectedBookId = event.target.closest('.book-item').getAttribute('data-book-id'); // Kitob IDsi
+        fetch(`/get-units/${selectedBookId}`) // Mavzularni backenddan so'rov yuborish
+            .then(response => response.json())
+            .then(data => {
+                const unitsList = document.querySelector('.units-list');
+                unitsList.innerHTML = ''; // Mavzular ro'yxatini tozalash
+                data.units.forEach(unit => {
+                    let li = document.createElement('li');
+                    li.textContent = unit.name;
+                    unitsList.appendChild(li);
+                });
+            })
+            .catch(error => console.error('Error loading the units:', error));
+    });
+
+</script>
+</body>
+</html>
